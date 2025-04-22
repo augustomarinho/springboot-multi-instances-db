@@ -32,19 +32,19 @@
 Before running the application, it's necessary to run docker compose to create the databases. In this docker compose file also up a pgAdmin instance to connect to the databases.
 
 ```bash
+
 docker-compose up -d --force-recreate
 ```
 After that, you can run the application using the following command:
 
 ```bash
+
 ./mvnw spring-boot:run
 ```
 
 ## Simulating latency in Async Replication in PostgreSQL
 
 For executing the commands below, you need to connect to the PostgreSQL instances running in the docker container. You can do this using the following command accessing PgAdmin http://localhost:8711/
-
-```bash
 
 ### Stop replication
 **Go to the replica**
@@ -69,7 +69,7 @@ SELECT * FROM pg_replication_slots;
 
 ### Resume the replication
 **Go to the replica**
-```bash
+```sql
 SELECT pg_wal_replay_resume();
 ```
 
@@ -77,6 +77,7 @@ SELECT pg_wal_replay_resume();
 
 ### Create User
 ```bash
+
 curl -X POST \
   http://localhost:8080/users \
   -H "Content-Type: application/json" \
@@ -90,24 +91,28 @@ curl -X POST \
 ### Get User
 Find user by id using read-write database
 ```bash
+
 curl -X GET \
   http://localhost:8080/users/1:rw
 ```
 
 Find user by id using read-only database
 ```bash
+
 curl -X GET \
   http://localhost:8080/users/1:ro
 ```
 
 Find user by id using Read Only Transaction (@Transactional(readOnly = true))
 ```bash
+
 curl -X GET \
   http://localhost:8080/users/1/transaction/:ro
 ```
 
 Find user by id using Read Write Transaction (@Transactional(readOnly = false))
 ```bash
+
 curl -X GET \
   http://localhost:8080/users/1/transaction/:rw
 ```
@@ -116,12 +121,14 @@ curl -X GET \
 
 Find user by external id using read-write database
 ```bash
+
 curl -X GET \
   http://localhost:8080/users/external/69eba2e8-e61f-4283-b14e-86c3179d5245:rw
 ```
 
 Find user by external id using read-only database
 ```bash
+
 curl -X GET \
   http://localhost:8080/users/external/69eba2e8-e61f-4283-b14e-86c3179d5245:ro
 ```
@@ -129,17 +136,20 @@ curl -X GET \
 ### Get All Users
 Find all users using read-write database
 ```bash
+
 curl -X GET \
   http://localhost:8080/users/:rw
 ```
 Find all users using read-only database
 ```bash
+
 curl -X GET \
   http://localhost:8080/users/:ro
 ```
 
 ### Delete User
 ```bash
+
 curl -X DELETE \
   http://localhost:8080/users/1
 ```
@@ -148,5 +158,6 @@ curl -X DELETE \
 
 Ctrl + C to stop the application. To stop the docker containers, run the following command:
 ```bash
+
 docker-compose down --volumes
 ```

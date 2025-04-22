@@ -1,0 +1,26 @@
+{
+  "Servers": {
+    "1": {
+      "Name": "PostgreSQL Primary DB",
+      "Group": "Servers",
+      "Host": "postgres-primary-db",
+      "Port": 5432,
+      "Username": "postgres",
+      "Password": "postgres",
+      "MaintenanceDB": "study_db",
+      "SSLMode": "prefer",
+      "ConnTimeout": 10
+    },
+    "2": {
+      "Name": "PostgreSQL Replica DB",
+      "Group": "Servers",
+      "Host": "postgres-replica-db",
+      "Port": 5432,
+      "Username": "postgres",
+      "Password": "postgres",
+      "MaintenanceDB": "study_db",
+      "SSLMode": "prefer",
+      "ConnTimeout": 10
+    }
+  }
+}

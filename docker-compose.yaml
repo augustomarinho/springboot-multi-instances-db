@@ -1,0 +1,83 @@
+services:
+  postgres-primary-db: &base_postgres_container
+    image: postgres:17.0
+    container_name: postgres-primary-db
+    environment:
+      POSTGRES_USER: ${APP_DB_USER}
+      POSTGRES_PASSWORD: ${APP_DB_PASSWORD}
+      POSTGRES_DB: ${APP_DB_NAME}
+    ports:
+      - "${APP_DB_PORT}:5432"
+    volumes:
+      - postgres-primary-db-data:/var/lib/postgresql/data
+      - ./postgres/primary_scripts:/docker-entrypoint-initdb.d
+    command: >
+      -p 5432
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "pg_isready",
+          "--username=${APP_DB_USER}",
+          "--host=localhost",
+          "--port=5432",
+          "--dbname=${APP_DB_NAME}"
+        ]
+      interval: 5s
+      retries: 10
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 200M
+        reservations:
+          cpus: '0.1'
+          memory: 100M
+  postgres-replica-db:
+    <<: *base_postgres_container
+    container_name: postgres-replica-db
+    user: postgres
+    ports:
+      - "${APP_DB_PORT_2}:5432"
+    volumes:
+      - postgres-replica-db-data:/var/lib/postgresql/data
+    depends_on:
+      - postgres-primary-db
+    environment:
+      PGUSER: replicator
+      PGPASSWORD: postgres
+    entrypoint:
+      - "sh"
+      - "-c"
+      - |
+        until pg_isready -h postgres-primary-db -p 5432 -U postgres; do
+          echo "Waiting for postgres-primary-db to be ready...";
+          sleep 2;
+        done;
+        pg_basebackup -h postgres-primary-db -D /var/lib/postgresql/data -R --slot=replication_slot;
+        chmod 0700 /var/lib/postgresql/data
+        postgres
+
+  pgadmin-replication:
+    image: dpage/pgadmin4:latest
+    container_name: pgadmin-replication
+    environment:
+      PGADMIN_CONFIG_SERVER_MODE: 'False'
+      PGADMIN_CONFIG_MASTER_PASSWORD_REQUIRED: 'False'
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}
+      PGADMIN_SETUP_EMAIL: ${PGADMIN_DEFAULT_EMAIL}
+      PGADMIN_SETUP_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}
+    ports:
+      - "8711:80"
+    depends_on:
+      - postgres-primary-db
+      - postgres-replica-db
+    volumes:
+      - pgadmin-data-replication:/var/lib/pgadmin
+      - ./pgadmin-config.json:/pgadmin4/servers.json
+
+volumes:
+  postgres-primary-db-data:
+  postgres-replica-db-data:
+  pgadmin-data-replication:

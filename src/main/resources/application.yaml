@@ -1,0 +1,33 @@
+spring:
+  application:
+    name: springboot-multi-instances-db
+  datasource:
+    hikari:
+      rw:
+        jdbcUrl: jdbc:postgresql://localhost:5401/study_db
+        username: postgres
+        password: postgres
+        driver-class-name: org.postgresql.Driver
+        pool-name: RW-Pool
+        maximum-pool-size: 10
+        minimum-idle: 2
+        connection-timeout: 30000
+        connection-init-sql: "SET application_name = 'RW-Pool'"
+      ro:
+        jdbcUrl: jdbc:postgresql://localhost:5402/study_db
+        username: postgres
+        password: postgres
+        driver-class-name: org.postgresql.Driver
+        pool-name: RO-Pool
+        maximum-pool-size: 15
+        minimum-idle: 5
+        read-only: true
+        connection-timeout: 30000
+        connection-init-sql: "SET application_name = 'RO-Pool'"
+  flyway:
+    enabled: true
+    locations: filesystem:./migrations
+    baseline-on-migrate: true
+    url: ${spring.datasource.hikari.rw.jdbcUrl}
+    user: ${spring.datasource.hikari.rw.username}
+    password: ${spring.datasource.hikari.rw.password}

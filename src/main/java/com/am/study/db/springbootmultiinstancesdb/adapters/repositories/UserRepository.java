@@ -5,13 +5,14 @@ import com.am.study.db.springbootmultiinstancesdb.application.models.User;
 import com.am.study.db.springbootmultiinstancesdb.application.ports.UserPort;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.annotation.Primary;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.transaction.support.TransactionTemplate;
 
 import java.sql.PreparedStatement;
 import java.util.List;
@@ -20,17 +21,16 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Repository
+@Qualifier("UserRepository")
+@Primary
 public class UserRepository implements UserPort, DataSourceInspector {
 
     private static final Logger logger = LoggerFactory.getLogger(UserRepository.class);
 
     private final JdbcTemplate jdbcTemplate;
-    private final TransactionTemplate transactionTemplate;
 
-    public UserRepository(JdbcTemplate jdbcTemplate,
-                          TransactionTemplate transactionTemplate) {
+    public UserRepository(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
-        this.transactionTemplate = transactionTemplate;
     }
 
     @Override
@@ -70,9 +70,7 @@ public class UserRepository implements UserPort, DataSourceInspector {
     }
 
     private Optional<User> findByIdWithTransaction(Long id) {
-        return transactionTemplate.execute(s -> {
-            return findById(id);
-        });
+        return findById(id);
     }
 
     @Override
@@ -102,7 +100,6 @@ public class UserRepository implements UserPort, DataSourceInspector {
     public Optional<User> findByExternalIdForceDBType(UUID externalId, String dbType) {
         return findByExternalId(externalId, dbType);
     }
-
 
     private List<User> findAll(String dbType) {
         DbContextHolder.DbType dbTypeEnum = DbContextHolder.DbType.valueOf(dbType.toUpperCase());

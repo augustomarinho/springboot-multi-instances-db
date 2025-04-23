@@ -21,8 +21,6 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Repository
-@Qualifier("UserRepository")
-@Primary
 public class UserRepository implements UserPort, DataSourceInspector {
 
     private static final Logger logger = LoggerFactory.getLogger(UserRepository.class);

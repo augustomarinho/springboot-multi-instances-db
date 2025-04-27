@@ -1,6 +1,7 @@
 package com.am.study.db.springbootmultiinstancesdb.adapters.repositories;
 
 import com.am.study.db.springbootmultiinstancesdb.adapters.core.configs.db.DbContextHolder;
+import com.am.study.db.springbootmultiinstancesdb.adapters.core.executors.DbContextExecutor;
 import com.am.study.db.springbootmultiinstancesdb.application.models.User;
 import com.am.study.db.springbootmultiinstancesdb.application.ports.UserPort;
 import org.slf4j.Logger;
@@ -60,9 +61,10 @@ public class UserRepository implements UserPort, DataSourceInspector {
 
     @Override
     public Optional<User> findByIdForceDBType(Long id, String dbType) {
-        DbContextHolder.DbType dbTypeEnum = DbContextHolder.DbType.valueOf(dbType.toUpperCase());
-        DbContextHolder.setDbType(dbTypeEnum);
-        return findById(id);
+        return DbContextExecutor.executeWithDbContext(
+                DbContextHolder.DbType.valueOf(dbType.toUpperCase()),
+                () -> findById(id)
+        );
     }
 
     @Override
@@ -78,12 +80,14 @@ public class UserRepository implements UserPort, DataSourceInspector {
     }
 
     private Optional<User> findByExternalId(UUID externalId, String dbType) {
-        DbContextHolder.DbType dbTypeEnum = DbContextHolder.DbType.valueOf(dbType.toUpperCase());
-        DbContextHolder.setDbType(dbTypeEnum);
-        List<User> users = jdbcTemplate.query(
-                "SELECT id, external_id, name, age FROM users WHERE external_id = ?",
-                new Object[]{externalId},
-                userRowMapper());
+        List<User> users = DbContextExecutor.executeWithDbContext(
+                DbContextHolder.DbType.valueOf(dbType.toUpperCase()),
+                () -> jdbcTemplate.query(
+                        "SELECT id, external_id, name, age FROM users WHERE external_id = ?",
+                        new Object[]{externalId},
+                        userRowMapper())
+        );
+
         logger.info("[findByExternalId] Current connection {}", getDataSourceName(jdbcTemplate));
         return users.stream().findFirst();
     }
@@ -94,13 +98,18 @@ public class UserRepository implements UserPort, DataSourceInspector {
     }
 
     private List<User> findAll(String dbType) {
-        DbContextHolder.DbType dbTypeEnum = DbContextHolder.DbType.valueOf(dbType.toUpperCase());
-        DbContextHolder.setDbType(dbTypeEnum);
-        logger.info("[findAll] Current connection {}", getDataSourceName(jdbcTemplate));
-        return jdbcTemplate.query(
-                "SELECT id, external_id, name, age FROM users",
-                userRowMapper());
+        List<User> users = DbContextExecutor.executeWithDbContext(
+                DbContextHolder.DbType.valueOf(dbType.toUpperCase()),
+                () -> {
+                    logger.info("[findAll] Current connection {}", getDataSourceName(jdbcTemplate));
+                    return jdbcTemplate.query(
+                            "SELECT id, external_id, name, age FROM users",
+                            userRowMapper());
+                }
+        );
+        return users;
     }
+
 
     @Override
     public List<User> findAllForceDBType(String dbType) {
@@ -109,7 +118,6 @@ public class UserRepository implements UserPort, DataSourceInspector {
 
     @Override
     public void deleteById(Long id) {
-        DbContextHolder.setDbType(DbContextHolder.DbType.RW);
         logger.info("[deleteById] Current connection {}", getDataSourceName(jdbcTemplate));
         jdbcTemplate.update("DELETE FROM users WHERE id = ?", id);
     }

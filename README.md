@@ -107,14 +107,14 @@ Find user by id using Read Only Transaction (@Transactional(readOnly = true))
 ```bash
 
 curl -X GET \
-  http://localhost:8080/users/1/transaction/:ro
+  http://localhost:8080/users/1/transaction:ro
 ```
 
 Find user by id using Read Write Transaction (@Transactional(readOnly = false))
 ```bash
 
 curl -X GET \
-  http://localhost:8080/users/1/transaction/:rw
+  http://localhost:8080/users/1/transaction:rw
 ```
 
 ### Get User by external id
@@ -138,13 +138,13 @@ Find all users using read-write database
 ```bash
 
 curl -X GET \
-  http://localhost:8080/users/:rw
+  http://localhost:8080/users:rw
 ```
 Find all users using read-only database
 ```bash
 
 curl -X GET \
-  http://localhost:8080/users/:ro
+  http://localhost:8080/users:ro
 ```
 
 ### Delete User

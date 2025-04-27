@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/users")
+@RequestMapping("/")
 public class UserController {
 
     private final UserPort userPort;
@@ -23,17 +23,17 @@ public class UserController {
         this.userPort = userPort;
     }
 
-    @PostMapping
+    @PostMapping("/users")
     public User createUser(@RequestBody User user) {
         return userPort.save(user);
     }
 
-    @GetMapping("/{id}:{dbType}")
+    @GetMapping("/users/{id}:{dbType}")
     public User getUser(@PathVariable Long id, @PathVariable String dbType) {
         return userPort.findByIdForceDBType(id, dbType).orElse(null);
     }
 
-    @GetMapping("/{id}/transaction/:{dbType}")
+    @GetMapping("/users/{id}/transaction:{dbType}")
     public User getUserInTransaction(@PathVariable Long id, @PathVariable String dbType) {
         if ("rw".equalsIgnoreCase(dbType)) {
             return userPort.findByIdWithTransactionRW(id).orElse(null);
@@ -42,17 +42,17 @@ public class UserController {
         return userPort.findByIdWithTransactionRO(id).orElse(null);
     }
 
-    @GetMapping("/external/{externalId}:{dbType}")
+    @GetMapping("/users/external/{externalId}:{dbType}")
     public User getUserByExternalId(@PathVariable UUID externalId, @PathVariable String dbType) {
         return userPort.findByExternalIdForceDBType(externalId, dbType).orElse(null);
     }
 
-    @GetMapping("/:{dbType}")
+    @GetMapping("/users:{dbType}")
     public List<User> getAllUsers(@PathVariable String dbType) {
         return userPort.findAllForceDBType(dbType);
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/users/{id}")
     public void deleteUser(@PathVariable Long id) {
         userPort.deleteById(id);
     }

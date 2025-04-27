@@ -65,20 +65,16 @@ public class UserRepository implements UserPort, DataSourceInspector {
         return findById(id);
     }
 
-    private Optional<User> findByIdWithTransaction(Long id) {
-        return findById(id);
-    }
-
     @Override
     @Transactional(readOnly = true)
     public Optional<User> findByIdWithTransactionRO(Long id) {
-        return findByIdWithTransaction(id);
+        return findById(id);
     }
 
     @Override
     @Transactional(readOnly = false)
     public Optional<User> findByIdWithTransactionRW(Long id) {
-        return findByIdWithTransaction(id);
+        return findById(id);
     }
 
     private Optional<User> findByExternalId(UUID externalId, String dbType) {
